@@ -10,38 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clonar repo
+      # 1. Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar SSH (MANUAL - EVITA EL ERROR DE LIBCRYPTO)
+      # 2. Configurar la clave SSH de forma manual (Esto evita el error de libcrypto por completo)
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          # Escribe la clave directamente en un archivo protegido
+          # Guardamos tu clave directamente en un archivo físico protegido
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # Inicia el agente de SSH y añade la clave apuntando al archivo
+          # Encendemos el agente de SSH nativo de Linux y registramos el archivo
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
           
-          # Guardamos las variables del agente para los siguientes pasos
+          # Guardamos la sesión del agente para que los siguientes pasos la recuerden
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
-      # 3. Agregar VPS a known hosts
+      # 3. Agregar la IP de tu servidor a los hosts conocidos
       - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 4. Probar conexión SSH
+      # 4. Probar que la conexión funcione
       - name: Test SSH
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo SSH OK"
 
-      # 5. Deploy en VPS
+      # 5. Ejecutar los comandos de despliegue en tu servidor
       - name: Deploy to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
