@@ -14,34 +14,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar la clave SSH de forma manual (Esto evita el error de libcrypto por completo)
+      # 2. Configurar la clave SSH decodificando desde Base64
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          # Guardamos tu clave directamente en un archivo físico protegido
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          # Toma el texto en Base64 de tus secretos, lo decodifica y lo guarda en un archivo físico limpio
+          echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # Encendemos el agente de SSH nativo de Linux y registramos el archivo
+          # Levanta el agente SSH nativo de Linux y registra la clave recién creada
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
           
-          # Guardamos la sesión del agente para que los siguientes pasos la recuerden
+          # Guarda las variables del agente en el entorno de GitHub para los siguientes pasos
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
-      # 3. Agregar la IP de tu servidor a los hosts conocidos
+      # 3. Agregar la IP de tu VPS a los hosts conocidos
       - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 4. Probar que la conexión funcione
+      # 4. Probar que la conexión SSH funcione correctamente
       - name: Test SSH
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo SSH OK"
 
-      # 5. Ejecutar los comandos de despliegue en tu servidor
+      # 5. Ejecutar los comandos de despliegue dentro de tu VPS
       - name: Deploy to VPS
         run: |
           ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
