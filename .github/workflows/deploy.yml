@@ -10,26 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Clonar repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Configurar SSH (CORRECTO)
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Add VPS to known hosts
+      # 3. Agregar VPS a known hosts
+      - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH connection
+      # 4. Probar conexión SSH
+      - name: Test SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo SSH OK"
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo SSH OK"
 
+      # 5. Deploy en VPS
       - name: Deploy to VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd ${{ secrets.DEPLOY_PATH }}
 
             git pull origin main
@@ -43,4 +48,3 @@ jobs:
             systemctl restart gunicorn-shopapi
             systemctl restart nginx
           EOF
-          
