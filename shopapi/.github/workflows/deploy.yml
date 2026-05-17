@@ -1,5 +1,6 @@
 name: ShopAPI CI/CD
 
+
 on:
   push:
     branches:
@@ -36,3 +37,6 @@ jobs:
             systemctl restart gunicorn-shopapi
             systemctl restart nginx
           EOF
+
+
+
