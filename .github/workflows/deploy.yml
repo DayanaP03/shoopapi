@@ -14,19 +14,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar la clave SSH decodificando desde Base64
+      # 2. CONFIGURACIÓN MANUAL CON BASE64 (Aquí quitamos webfactory/ssh-agent)
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          # Toma el texto en Base64 de tus secretos, lo decodifica y lo guarda en un archivo físico limpio
+          # Decodifica tu secreto Base64 y lo escribe directo en un archivo limpio
           echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # Levanta el agente SSH nativo de Linux y registra la clave recién creada
+          # Levanta el agente SSH nativo de Linux y añade el archivo de la clave
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/id_rsa
           
-          # Guarda las variables del agente en el entorno de GitHub para los siguientes pasos
+          # Guarda las variables del agente para los siguientes pasos del flujo
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
