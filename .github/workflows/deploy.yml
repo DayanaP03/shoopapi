@@ -14,12 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar clave SSH de forma directa y segura
-      - name: Configurar clave SSH
+      # 2. Configurar la clave SSH de forma directa
+      - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
           
-          # Escribe la clave respetando exactamente sus líneas
+          # Copia la clave tal cual respetando sus saltos de línea
           cat << 'EOF' > ~/.ssh/id_rsa
           ${{ secrets.VPS_SSH_KEY }}
           EOF
@@ -31,7 +31,6 @@ jobs:
           
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-
       # 3. Agregar la IP de tu VPS a los hosts conocidos
       - name: Add known hosts
         run: |
