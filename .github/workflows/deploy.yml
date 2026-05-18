@@ -1,61 +1,23 @@
-name: ShopAPI CI/CD
+name: Deploy to DigitalOcean
 
 on:
   push:
     branches:
-      - main
+      - main  # O la rama que uses (ej. master)
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clonar el repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Clonar el repositorio en GitHub Actions
+      uses: actions/checkout@v4
 
-      # 2. Configurar la clave SSH de forma directa
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          
-          # Copia la clave tal cual respetando sus saltos de línea
-          cat << 'EOF' > ~/.ssh/id_rsa
-          ${{ secrets.VPS_SSH_KEY }}
-          EOF
-          
-          chmod 600 ~/.ssh/id_rsa
-          
-          eval $(ssh-agent -s)
-          ssh-add ~/.ssh/id_rsa
-          
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-      # 3. Agregar la IP de tu VPS a los hosts conocidos
-      - name: Add known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+    - name: Configurar llave SSH segura usando secretos
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 4. Probar que la conexión SSH funcione correctamente
-      - name: Test SSH
-        run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "echo SSH OK"
-
-      # 5. Ejecutar los comandos de despliegue dentro de tu VPS
-      - name: Deploy to VPS
-        run: |
-          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
-            cd ${{ secrets.DEPLOY_PATH }}
-
-            git pull origin main
-
-            uv sync
-
-            uv run python manage.py migrate
-
-            uv run python manage.py collectstatic --noinput
-
-            sudo systemctl restart gunicorn-shopapi
-            sudo systemctl restart nginx
-          EOF
+    - name: Conectar al servidor y actualizar código
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /var/www/html/shoopapi && git pull origin main"
