@@ -13,8 +13,6 @@ jobs:
     - name: Clonar el repositorio en GitHub Actions
       uses: actions/checkout@v4
 
-
-
     - name: Configurar llave SSH segura usando secretos
       uses: webfactory/ssh-agent@v0.9.0
       with:
