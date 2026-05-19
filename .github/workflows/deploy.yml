@@ -13,7 +13,7 @@ jobs:
     - name: Clonar el repositorio en GitHub Actions
       uses: actions/checkout@v4
 
-      
+
 
     - name: Configurar llave SSH segura usando secretos
       uses: webfactory/ssh-agent@v0.9.0
@@ -22,4 +22,4 @@ jobs:
 
     - name: Conectar al servidor y actualizar codigo
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /root/shopapi_backend && git pull origin main"
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /root/shoopapi && git pull origin main"
