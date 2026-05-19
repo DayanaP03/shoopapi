@@ -20,4 +20,4 @@ jobs:
 
     - name: Conectar al servidor y actualizar codigo
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /root/shoopapi && git pull origin main"
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /opt/shopapi/shopapi && git pull origin main"
